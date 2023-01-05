@@ -1,0 +1,519 @@
+package ncu.im3069.demo.app;
+
+import java.sql.*;
+
+import org.json.*;
+
+import ncu.im3069.demo.util.DBMgr;
+import ncu.im3069.demo.app.For_adoption;
+
+public class For_adoptionHelper {
+    private For_adoptionHelper() {
+        
+    }
+    
+    private static For_adoptionHelper fah;
+    private Connection conn = null;
+    private PreparedStatement pres = null;
+    
+    public static For_adoptionHelper getHelper() {
+        /** Singleton??d?O?_?w?g??For_apotionHelper????A?Y?L?hnew?@??A?Y???h?????^?? */
+        if(fah == null) fah = new For_adoptionHelper();
+        
+        return fah;
+    }
+
+
+    public JSONObject getAll() {
+        /** ?s??@?? For_adoption ???? a ???A?£[?????C?@??d??^????~??? */
+    	For_adoption fa = null;
+        /** ?£[??x?s???????^????~?A?HJSONArray?‰D?x?s */
+        JSONArray jsa = new JSONArray();
+        /** ?O????????SQL???O */
+        String exexcute_sql = "";
+        /** ?????{???}?l?????? */
+        long start_time = System.nanoTime();
+        /** ????SQL?`??? */
+        int row = 0;
+        /** ?x?sJDBC??????w??^??????G?A?H pointer ?‰D?????U?@????? */
+        ResultSet rs = null;
+        
+        try {
+            /** ???o???w???s?u */
+            conn = DBMgr.getConnection();
+            /** SQL???O */
+            String sql = "SELECT * FROM `missa`.`tbl_for_adoption`";
+            
+            /** ?N???^???SQL???O???A?Y?L?h???£Wu??n???? prepareStatement */
+            pres = conn.prepareStatement(sql);
+            /** ????d???SQL???O?eO????^?????? */
+            rs = pres.executeQuery();
+
+            /** ?????u????Ô‚SQL???O?A?aL?X **/
+            exexcute_sql = pres.toString();
+            System.out.println(exexcute_sql);
+            
+            /** ?z?L while ?j????pointer?A???o?C?@???^???? */
+            while(rs.next()) {
+                /** ?C????@???j??????@????? */
+                row += 1;
+                
+                /** ?N ResultSet ???????X */
+                int for_adoption_id = rs.getInt("for_adoption_id");          
+                String name = rs.getString("name");
+                String species = rs.getString("species");
+                String breed = rs.getString("breed");
+                int age = rs.getInt("age");
+                String gender = rs.getString("gender");
+                String size = rs.getString("size");
+                String exterior = rs.getString("exterior");
+                String ligation = rs.getString("ligation");
+                String area = rs.getString("area");
+                String description = rs.getString("description");
+                String image = rs.getString("img_path");
+                String status = rs.getString("status");
+              
+                
+                /** ?N?C?@????~??????@?W?sFor_adoption???? */
+                fa = new For_adoption(for_adoption_id, name, species, breed, age, gender, size, exterior,
+                                      ligation, area, description, image, status);         //??S??
+                /** ???X?????~?????e??? JSONsonArray ?? */
+                jsa.put(fa.getData());
+            }
+
+        } catch (SQLException e) {
+            /** ?L?XJDBC SQL???O???~ **/
+            System.err.format("SQL State: %s\n%s\n%s", e.getErrorCode(), e.getSQLState(), e.getMessage());
+        } catch (Exception e) {
+            /** ?Y???~?h?L?X???~?T?? */
+            e.printStackTrace();
+        } finally {
+            /** ?????s?u???????????w???????? **/
+            DBMgr.close(rs, pres, conn);
+        }
+        
+        /** ?????{???????????? */
+        long end_time = System.nanoTime();
+        /** ?????{???????? */
+        long duration = (end_time - start_time);
+        
+        /** ?NSQL???O?B??O????B?v?T???P????|??????JSONArray?A????JSONObject?^?? */
+        JSONObject response = new JSONObject();
+        response.put("sql", exexcute_sql);
+        response.put("row", row);
+        response.put("time", duration);
+        response.put("data", jsa);
+
+        return response;
+    }
+
+
+    public JSONObject getByIdList(String data) {
+        /** ?s??@?? Product ???? m ???A?£[?????C?@??d??^????~??? */
+        For_adoption fa = null;
+        /** ?£[??x?s???????^????~?A?HJSONArray?‰D?x?s */
+        JSONArray jsa = new JSONArray();
+        /** ?O????????SQL???O */
+        String exexcute_sql = "";
+        /** ?????{???}?l?????? */
+        long start_time = System.nanoTime();
+        /** ????SQL?`??? */
+        int row = 0;
+        /** ?x?sJDBC??????w??^??????G?A?H pointer ?‰D?????U?@????? */
+        ResultSet rs = null;
+
+        try {
+          /** ???o???w???s?u */
+          conn = DBMgr.getConnection();
+          String[] in_para = DBMgr.stringToArray(data, ",");
+          /** SQL???O */
+          String sql = "SELECT * FROM `missa`.`tbl_for_adoption` WHERE `for_adoption`.`for_adoption_id`";
+          for (int i=0 ; i < in_para.length ; i++) {
+              sql += (i == 0) ? "in (?" : ", ?";
+              sql += (i == in_para.length-1) ? ")" : "";
+          }
+          
+          /** ?N???^???SQL???O???A?Y?L?h???£Wu??n???? prepareStatement */
+          pres = conn.prepareStatement(sql);
+          for (int i=0 ; i < in_para.length ; i++) {
+            pres.setString(i+1, in_para[i]);
+          }
+          /** ????d???SQL???O?eO????^?????? */
+          rs = pres.executeQuery();
+
+          /** ?????u????Ô‚SQL???O?A?aL?X **/
+          exexcute_sql = pres.toString();
+          System.out.println(exexcute_sql);
+          
+          /** ?z?L while ?j????pointer?A???o?C?@???^???? */
+          while(rs.next()) {
+                /** ?C????@???j??????@????? */
+                row += 1;
+                
+                /** ?N ResultSet ???????X */
+                int for_adoption_id = rs.getInt("for_adoption_id");          
+                String name = rs.getString("name");
+                String species = rs.getString("species");
+                String breed = rs.getString("breed");
+                int age = rs.getInt("age");
+                String gender = rs.getString("gender");
+                String size = rs.getString("size");
+                String exterior = rs.getString("exterior");
+                String ligation = rs.getString("ligation");
+                String area = rs.getString("area");
+                String description = rs.getString("description");
+                String image = rs.getString("img_path");
+                String status = rs.getString("status");
+              
+                
+                /** ?N?C?@????~??????@?W?sFor_adoption???? */
+                fa = new For_adoption(for_adoption_id, name, species, breed, age, gender, size, exterior,
+                                      ligation, area, description, image, status);         
+                /** ???X?????~?????e??? JSONsonArray ?? */
+                jsa.put(fa.getData());
+            }
+
+        } catch (SQLException e) {
+          /** ?L?XJDBC SQL???O???~ **/
+          System.err.format("SQL State: %s\n%s\n%s", e.getErrorCode(), e.getSQLState(), e.getMessage());
+        } catch (Exception e) {
+          /** ?Y???~?h?L?X???~?T?? */
+          e.printStackTrace();
+        } finally {
+          /** ?????s?u???????????w???????? **/
+          DBMgr.close(rs, pres, conn);
+        }
+      
+      /** ?????{???????????? */
+      long end_time = System.nanoTime();
+      /** ?????{???????? */
+      long duration = (end_time - start_time);
+      
+      /** ?NSQL???O?B??O????B?v?T???P????|??????JSONArray?A????JSONObject?^?? */
+      JSONObject response = new JSONObject();
+      response.put("sql", exexcute_sql);
+      response.put("row", row);
+      response.put("time", duration);
+      response.put("data", jsa);
+
+      return response;
+    }
+
+
+    public For_adoption getById(String id) {
+        /** ?s??@?? For_adoption ???? fa ???A?£[?????C?@??d??^???|????? */
+        For_adoption fa = null;
+        /** ?O????????SQL???O */
+        String exexcute_sql = "";
+        /** ?x?sJDBC??????w??^??????G?A?H pointer ?‰D?????U?@????? */
+        ResultSet rs = null;
+        
+        try {
+            /** ???o???w???s?u */
+            conn = DBMgr.getConnection();
+            /** SQL???O */
+            String sql = "SELECT * FROM `missa`.`tbl_for_adoption` WHERE `for_adoption_id` = ? LIMIT 1";
+            
+            /** ?N???^???SQL???O?? */
+            pres = conn.prepareStatement(sql);
+            pres.setString(1, id);
+            /** ????d???SQL???O?eO????^?????? */
+            rs = pres.executeQuery();
+
+            /** ?????u????Ô‚SQL???O?A?aL?X **/
+            exexcute_sql = pres.toString();
+            System.out.println(exexcute_sql);
+            
+            /** ?z?L while ?j????pointer?A???o?C?@???^???? */
+            /** ???T??????w?u?|???@????|???s???????A?]?????i?H???£Z?? while ?j?? */
+            while(rs.next()) {
+                
+                /** ?N ResultSet ???????X */
+                int for_adoption_id = rs.getInt("for_adoption_id");          
+                String name = rs.getString("name");
+                String species = rs.getString("species");
+                String breed = rs.getString("breed");
+                int age = rs.getInt("age");
+                String gender = rs.getString("gender");
+                String size = rs.getString("size");
+                String exterior = rs.getString("exterior");
+                String ligation = rs.getString("ligation");
+                String area = rs.getString("area");
+                String description = rs.getString("description");
+                String image = rs.getString("img_path");
+                String status = rs.getString("status");
+              
+                
+                /** ?N?C?@????~??????@?W?sFor_adoption???? */
+                fa = new For_adoption(for_adoption_id, name, species, breed, age, gender, size, exterior,
+                                      ligation, area, description, image, status);         
+                
+            }
+            
+        } catch (SQLException e) {
+            /** ?L?XJDBC SQL???O???~ **/
+            System.err.format("SQL State: %s\n%s\n%s", e.getErrorCode(), e.getSQLState(), e.getMessage());
+        } catch (Exception e) {
+            /** ?Y???~?h?L?X???~?T?? */
+            e.printStackTrace();
+        } finally {
+            /** ?????s?u???????????w???????? **/
+            DBMgr.close(rs, pres, conn);
+        }
+        
+
+        return fa;
+    }
+
+
+
+
+
+
+    public JSONObject deleteByID(int id) {
+        /** ?O????????SQL???O */
+        String exexcute_sql = "";
+        /** ?????{???}?l?????? */
+        long start_time = System.nanoTime();
+        /** ????SQL?`??? */
+        int row = 0;
+        /** ?x?sJDBC??????w??^??????G?A?H pointer ?‰D?????U?@????? */
+        ResultSet rs = null;
+        
+        try {
+            /** ???o???w???s?u */
+            conn = DBMgr.getConnection();
+            
+            /** SQL???O */
+            String sql = "DELETE FROM `missa`.`tbl_for_adoption` WHERE `for_adoption_id` = ? LIMIT 1";
+            
+            /** ?N???^???SQL???O?? */
+            pres = conn.prepareStatement(sql);
+            pres.setInt(1, id);
+            /** ????R????SQL???O?eO???v?T????? */
+            row = pres.executeUpdate();
+
+            /** ?????u????Ô‚SQL???O?A?aL?X **/
+            exexcute_sql = pres.toString();
+            System.out.println(exexcute_sql);
+            
+        } catch (SQLException e) {
+            /** ?L?XJDBC SQL???O???~ **/
+            System.err.format("SQL State: %s\n%s\n%s", e.getErrorCode(), e.getSQLState(), e.getMessage());
+        } catch (Exception e) {
+            /** ?Y???~?h?L?X???~?T?? */
+            e.printStackTrace();
+        } finally {
+            /** ?????s?u???????????w???????? **/
+            DBMgr.close(rs, pres, conn);
+        }
+
+        /** ?????{???????????? */
+        long end_time = System.nanoTime();
+        /** ?????{???????? */
+        long duration = (end_time - start_time);
+        
+        /** ?NSQL???O?B??O????P?v?T???A????JSONObject?^?? */
+        JSONObject response = new JSONObject();
+        response.put("sql", exexcute_sql);
+        response.put("row", row);
+        response.put("time", duration);
+
+        return response;
+    }
+
+
+    public JSONObject create(For_adoption fa) {
+        /** ?O????????SQL???O */
+        String exexcute_sql = "";
+        /** ?????{???}?l?????? */
+        long start_time = System.nanoTime();
+        /** ????SQL?`??? */
+        int row = 0;
+        
+        try {
+            /** ???o???w???s?u */
+            conn = DBMgr.getConnection();
+            /** SQL???O */
+            String sql = "INSERT INTO `missa`.`tbl_for_adoption`(`name`, `species`, `breed`, `age`, `gender`, `size`, `exterior`, `ligation`,`area`, `description`, `img_path`, `status`)"
+                    + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            /** ???o??????? */
+            String name = fa.getName();
+            String species = fa.getSpecies();
+            String breed = fa.getBreed();
+            int age = fa.getAge();
+            String gender = fa.getGender();
+            String size = fa.getSize();
+            String exterior = fa.getExterior();
+            String ligation = fa.getLigation();
+            String area = fa.getArea();
+            String description = fa.getDescription();
+            String image = fa.getImg_path();
+            String status = fa.getStatus();
+            
+            /** ?N???^???SQL???O?? */               
+            pres = conn.prepareStatement(sql);
+            pres.setString(1, name);
+            pres.setString(2, species);
+            pres.setString(3, breed);
+            pres.setInt(4, age);
+            pres.setString(5, gender);
+            pres.setString(6, size);
+            pres.setString(7, exterior);
+            pres.setString(8, ligation);
+            pres.setString(9, area);
+            pres.setString(10, description);
+            pres.setString(11, image);
+            pres.setString(12, status);
+            
+            /** ????s?W??SQL???O?eO???v?T????? */
+            row = pres.executeUpdate();
+            
+            /** ?????u????Ô‚SQL???O?A?aL?X **/
+            exexcute_sql = pres.toString();
+            System.out.println(exexcute_sql);
+
+        } catch (SQLException e) {
+            /** ?L?XJDBC SQL???O???~ **/
+            System.err.format("SQL State: %s\n%s\n%s", e.getErrorCode(), e.getSQLState(), e.getMessage());
+        } catch (Exception e) {
+            /** ?Y???~?h?L?X???~?T?? */
+            e.printStackTrace();
+        } finally {
+            /** ?????s?u???????????w???????? **/
+            DBMgr.close(pres, conn);
+        }
+
+        /** ?????{???????????? */
+        long end_time = System.nanoTime();
+        /** ?????{???????? */
+        long duration = (end_time - start_time);
+
+        /** ?NSQL???O?B??O????P?v?T???A????JSONObject?^?? */
+        JSONObject response = new JSONObject();
+        response.put("sql", exexcute_sql);
+        response.put("time", duration);
+        response.put("row", row);
+
+        return response;
+    }
+
+
+    public JSONObject update(For_adoption fa) {
+        /** ?????^?????? */
+        JSONArray jsa = new JSONArray();
+        /** ?O????????SQL???O */
+        String exexcute_sql = "";
+        /** ?????{???}?l?????? */
+        long start_time = System.nanoTime();
+        /** ????SQL?`??? */
+        int row = 0;
+        
+        try {
+            /** ???o???w???s?u */
+            conn = DBMgr.getConnection();
+            /** SQL???O */
+            String sql = "Update `missa`.`tbl_for_adoption` SET `name` = ? ,`species` = ? , `breed` = ?, `age` = ? ,`gender` = ? ,`size` = ? ,`exterior` = ? ,`ligation` = ? ,`area` = ? ,`description` = ? ,`image` = ? WHERE `for_adoption_id` = ?";  //??S??
+            /** ???o??????? */
+            int for_adoption_id = fa.getFor_adoption_id();
+            String name = fa.getName();
+            String species = fa.getSpecies();
+            String breed = fa.getBreed();
+            int age = fa.getAge();
+            String gender = fa.getGender();
+            String size = fa.getSize();
+            String exterior = fa.getExterior();
+            String ligation = fa.getLigation();
+            String area = fa.getArea();
+            String description = fa.getDescription();
+            String image = fa.getImg_path();
+            String status = fa.getStatus();
+
+            
+            /** ?N???^???SQL???O?? */
+            pres = conn.prepareStatement(sql);     
+            pres.setString(1, name);
+            pres.setString(2, species);
+            pres.setString(3, breed);
+            pres.setInt(4, age);
+            pres.setString(5, gender);
+            pres.setString(6, size);
+            pres.setString(7, exterior);
+            pres.setString(8, ligation);
+            pres.setString(9, area);
+            pres.setString(10, description);
+            pres.setString(11, image);
+            pres.setString(12, status);
+            pres.setInt(12, for_adoption_id);
+            /** ?????s??SQL???O?eO???v?T????? */
+            row = pres.executeUpdate();
+
+            /** ?????u????Ô‚SQL???O?A?aL?X **/
+            exexcute_sql = pres.toString();
+            System.out.println(exexcute_sql);
+
+        } catch (SQLException e) {
+            /** ?L?XJDBC SQL???O???~ **/
+            System.err.format("SQL State: %s\n%s\n%s", e.getErrorCode(), e.getSQLState(), e.getMessage());
+        } catch (Exception e) {
+            /** ?Y???~?h?L?X???~?T?? */
+            e.printStackTrace();
+        } finally {
+            /** ?????s?u???????????w???????? **/
+            DBMgr.close(pres, conn);
+        }
+        
+        /** ?????{???????????? */
+        long end_time = System.nanoTime();
+        /** ?????{???????? */
+        long duration = (end_time - start_time);
+        
+        /** ?NSQL???O?B??O????P?v?T???A????JSONObject?^?? */
+        JSONObject response = new JSONObject();
+        response.put("sql", exexcute_sql);
+        response.put("row", row);
+        response.put("time", duration);
+        response.put("data", jsa);
+
+        return response;
+    }
+
+
+
+    public void updateStatus(For_adoption fa, String status) {      
+        /** ?O????????SQL???O */
+        String exexcute_sql = "";
+        
+        try {
+            /** ???o???w???s?u */
+            conn = DBMgr.getConnection();
+            /** SQL???O */
+            String sql = "Update `missa`.`tbl_for_adoption` SET `status` = ? WHERE `id` = ?";
+            /** ???o?|???s?? */
+            int for_adoption_id = fa.getFor_adoption_id();
+            
+            
+            /** ?N???^???SQL???O?? */
+            pres = conn.prepareStatement(sql);
+            pres.setString(1, status);
+            pres.setInt(2, for_adoption_id);
+            /** ?????s??SQL???O */
+            pres.executeUpdate();
+
+            /** ?????u????Ô‚SQL???O?A?aL?X **/
+            exexcute_sql = pres.toString();
+            System.out.println(exexcute_sql);
+        } catch (SQLException e) {
+            /** ?L?XJDBC SQL???O???~ **/
+            System.err.format("SQL State: %s\n%s\n%s", e.getErrorCode(), e.getSQLState(), e.getMessage());
+        } catch (Exception e) {
+            /** ?Y???~?h?L?X???~?T?? */
+            e.printStackTrace();
+        } finally {
+            /** ?????s?u???????????w???????? **/
+            DBMgr.close(pres, conn);
+        }
+    }
+
+}

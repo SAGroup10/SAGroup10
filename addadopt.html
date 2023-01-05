@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>CakePHP: the rapid development php framework: Members</title>
+    <link href="statics/icon/favicon.ico" type="image/x-icon" rel="icon">
+    <link href="statics/icon/favicon.ico" type="image/x-icon" rel="shortcut icon">
+    <link rel="stylesheet" type="text/css" href="statics/css/cake.generic.css">
+
+    <script src="statics/js/jquery-3.4.1.min.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div id="container">
+        <div id="header">
+            <h1><a href="http://cakephp.org/">CakePHP: the rapid development php framework</a></h1>
+        </div>
+        
+        <div id="content">
+			<img src="statics/img/Logo.png" width="70" height="70" style="float: left"></img>
+            <br>
+			<h2>新增送養資訊</h2>
+			<br>
+            <a href="for_adoption.html">瀏覽流浪動物</a>
+            <a href="case.html">結案案件管理</a>
+            
+            <div id="flashMessage" class="message" style="display: none;"></div>
+
+            <form id="form" accept-charset="utf-8">
+                <div style="display:none;"><input type="hidden" name="_method" value="POST"></div>
+                <br>
+				<label for="animal_name" id="animal_name">姓名</label>
+			    <input name="animal_name" maxlength="30" type="text" id="animal_name" placeholder="ex: 黑嚕嚕" required="required"> </input> 
+
+			<br><br>
+			<label for="dropdown" id="species" style="width: 90vw;">物種</label>
+				
+				<select id="dropdown">
+					<option value = "species_c">貓</option>
+					<option value = "species_d">狗</option>
+					<option value = "species_t">龜</option>
+					<option value = "species_b">鳥</option>
+					<option value = "species_m">鼠</option>
+				</select>
+				<br>
+				<label for="animal_variety" id="animal_variety">品種</label>
+			    <input name="animal_variety" maxlength="30" type="text" id="animal_variety" placeholder="ex: 米克斯" required="required"> </input> 
+				<br><br>
+			    <label for="number" id="number-label">年齡</label>
+			    <input id="number" type="number" name="number" min ="0" class="form-inputs" required> </input>
+			    <br><br>
+			    <label for="dropdown" id="sex" style="width: 90vw;">性別</label>
+			    <select id="dropdown">
+				<option value = "sex_m">雄</option>
+				<option value = "sex_f">雌</option>
+				<option value = "sex_o">其他</option>
+			    </select>
+			    <br>
+			    <label for="dropdown" id="size" style="width: 90vw;">體型</label>
+			    <select id="dropdown">
+				<option value = "size_l">大</option>
+				<option value = "size_m">中</option>
+				<option value = "size_s">小</option>
+			    </select>
+			    <br>
+			    <label for="outward" id="outward"> 外觀</label>
+			    <input id="outward" type="text" name="outward" placeholder="ex: 白色" required="required"> </input> 
+				<br><br>
+			    <label for="ligation" id="ligation" style="width: 90vw;">結紮</label>
+			    <select id="dropdown">
+				<option value = "ligation_y">有</option>
+				<option value = "ligation_n">無</option>
+				<option value = "ligation_u">不曉得</option>
+			    </select>
+			    <br>
+			    <label for="area" id="area"> 地區</label>
+			    <input id="area" type="text" name="area" placeholder="ex: 台北市" required="required"> </input>   
+				<br><br>
+				<label for="introduce" id="introduce">詳細介紹</label>
+			    <input id="introduce" type="text" name="introduce" required="required"> </input> 
+
+			    <br>
+			    <div class="container">
+					  
+				<div class="form-group">
+					<label for="">Upload Picture</label>
+					<div class="file-upload">
+					<input type="file" class="form-control d-none" id="s-pic">
+					</div>
+				</div>
+				</div>
+               
+                <div class="submit"><input type="button" value="新增" id="submit"></div>
+            </form>
+			
+            
+			
+			
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    // 處理表單點擊事件
+                    var $form = $('#submit');
+                    $form.click(function() {
+                        submit();
+                    });
+
+                    function submit() {
+                        var name = $('#member_name').val();
+                        var email = $('#member_email').val();
+                        var password = $('#member_password').val();
+
+                        var email_rule = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/;
+                        var password_rule = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+                        if (!email_rule.test(email)) {
+                            alert("Email格式不符！");
+                        }
+                        else if(!password_rule.test(password)) {
+                            alert("密碼格式不符，長度至少8，且至少包含一個數字和英文字母！");
+                        }
+                        else {
+                            // 將資料組成JSON格式
+                            var data_object = {
+                                "name": name,
+                                "email": email,
+                                "password": password
+                            };
+
+                            // 將JSON格式轉換成字串
+                            var data_string = JSON.stringify(data_object);
+
+                            // 發出POST的AJAX請求
+                            $.ajax({
+                                    type: "POST",
+                                    url: "api/member.do",
+                                    data: data_string,
+                                    crossDomain: true,
+                                    cache: false,
+                                    dataType: 'json',
+                                    timeout: 5000,
+                                    success: function (response) {
+                                        $('#flashMessage').html(response.message);
+                                        $('#flashMessage').show();
+                                        if(response.status == 200){
+                                            updateSQLTable(response.response);
+                                        }
+                                    },
+                                    error: function () {
+                                        alert("無法連線到伺服器！");
+                                    }
+                            });
+                        }
+                    }
+
+                    function updateSQLTable(data) {
+                        $("#sql_log > tbody").empty();
+                        var time = (data.time / 1000000).toFixed(2);
+                        var table_html = "";
+
+                        table_html += '<tr>';
+                        table_html += '<td>' + '1' + '</td>';
+                        table_html += '<td>' + data.sql + '</td>';
+                        table_html += '<td style="text-align: right">' + '0' + '</td>';
+                        table_html += '<td style="text-align: right">' + data.row + '</td>';
+                        table_html += '<td style="text-align: right">' + data.row + '</td>';
+                        table_html += '<td style="text-align: right">' + time + '</td>';
+                        table_html += '</tr>';
+                        $("#sql_log > tbody").append(table_html);
+                        $("#sql_summary").html("(default) " + data.row + " queries took " + time + " ms");
+                    }
+                });
+            </script>
+
+        </div>
+        
+        <div id="footer">
+            <a href="http://www.cakephp.org/" target="_blank" id="cake-powered"><img src="statics/img/cake.power.gif" alt="CakePHP: the rapid development php framework" border="0"></a>
+            <p>CakePHP 2.6.10</p>
+        </div>
+    </div>
+	 <table class="cake-sql-log" id="sql_log" summary="Cake SQL Log" cellspacing="0">
+        <caption id="sql_summary">(default) 0 queries took 0 ms</caption>
+        <thead>
+            <tr>
+                <th>Nr</th>
+                <th>Query</th>
+                <th>Error</th>
+                <th>Affected</th>
+                <th>Num. rows</th>
+                <th>Took (ms)</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</body>
+
+
+</html>
